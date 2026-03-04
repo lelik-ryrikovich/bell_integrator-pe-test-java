@@ -8,13 +8,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-//import java.util.concurrent.atomic.AtomicInteger;
 
 public class Logic {
     /**
-     * Номер тест-файла
+     * Русские гласные буквы
      */
-    //private static final AtomicInteger numberOfTestFile = new AtomicInteger(0);
+    private static final String VOWELS_RU = "аеёиоуыэюяАЕЁИОУЫЭЮЯ";
 
     /**
      * Обрабатывает тест-файл
@@ -27,7 +26,6 @@ public class Logic {
             String sourceResult = Logic.getInput(Path.of(inputFile));
             String expectedResult = Logic.getInput(Path.of(outputFile));
             boolean checkResult = Logic.checkResult(sourceResult, expectedResult);
-            //Logic.printResult(checkResult, sourceResult, expectedResult);
             Logic.printResult(numberOfTestFile, checkResult, sourceResult, expectedResult);
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -35,12 +33,60 @@ public class Logic {
     }
 
     /**
-     * Возвращает результат входного значения
+     * Считает в каждой строке количество английских букв, русских гласных букв и других символов
      * @param inputString входное значение
-     * @return входное значение
+     * @return результат подсчета
      */
     public static String logic(String inputString) {
-        return inputString;
+        String[] lines = inputString.split("\n");
+        StringBuilder result = new StringBuilder();
+
+        // проходимся по каждой строке
+        for (String line: lines) {
+            int countEngChar = 0; // кол-во английских букв
+            int countRuVowels = 0; // кол-во русских гласных
+            int otherSymbols = 0; // кол-во других символов
+
+            char[] charArray = line.toCharArray();
+            // проходимся по каждому символу строки
+            for (char c: charArray) {
+                if (isEnglishLetterRegex(c)) {
+                    countEngChar += 1;
+                } else if (isRussianVowel(c)) {
+                    countRuVowels += 1;
+                } else {
+                    otherSymbols += 1;
+                }
+            }
+            result.append("Английских: ").append(countEngChar).append(", ")
+                    .append("Русских гласных: ").append(countRuVowels).append(", ")
+                    .append("Другие символы ").append(otherSymbols).append("\n");
+        }
+
+        // Удаляем последний перевод строки, если нужно
+        if (result.length() > 0) {
+            result.setLength(result.length() - 1);
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Проверяет, является ли символ русской гласной буквой
+     * @param c символ
+     * @return true, если символ является русской гласной буквой
+     */
+    public static boolean isRussianVowel(char c) {
+        return VOWELS_RU.indexOf(c) != -1;
+    }
+
+    /**
+     * Проверяет, является ли символ английской буквой
+     * @param c символ
+     * @return true, если символ является английской буквой
+     */
+    public static boolean isEnglishLetterRegex(char c) {
+        return String.valueOf(c).matches("[a-zA-Z]");
     }
 
     /**
@@ -86,14 +132,18 @@ public class Logic {
      * @param expectedResult ожидаемый результат
      */
     public static void printResult(int numberOfTestFile, boolean isOk, String sourceResult, String expectedResult) {
-        //numberOfTestFile.incrementAndGet();
         System.out.println("Тест файл " + numberOfTestFile + " результат " + (isOk ? "OK" : "Failed") + ":");
+        String[] lines = sourceResult.split("\n");
+
+        for (String line: lines) {
+            System.out.println("Строка: " + line);
+        }
         System.out.println("Результат:");
-        System.out.println(sourceResult);
+        System.out.println(logic(sourceResult));
 
         if (!isOk) {
             System.out.println("Ожидали:");
-            System.out.println(expectedResult);
+            System.out.println(logic(expectedResult));
         }
     }
 
